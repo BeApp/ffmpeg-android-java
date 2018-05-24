@@ -1,0 +1,143 @@
+// This gradle file will generate a proper pom.xml file and upload it with jar/aar, sources and javadoc
+// Once following instructions have been done, just type this command in the project's folder : ./gradlew build uploadArchives
+//
+//
+// Developers have to store their credentials in a '~/.gradle/gradle.properties' file, like below :
+//     beapp_artifactory_user=<username>
+//     beapp_artifactory_password=<password>
+//     beapp_repository_release=http://<repository_host>/libs-release-local
+//     beapp_repository_snapshot=http://<repository_host>/libs-snapshot-local
+//
+//
+// Caller must declare the following properties :
+// ext {
+//    libraryName = 'logger'
+//    libraryGroupId = 'fr.beapp'
+//    libraryArtifactId = 'logger'
+//    libraryVersion = '1.0'
+//    libraryPackaging = 'aar'
+//
+//    libraryDescription = 'A logger library to wrap and enhanced default Android logs'
+//
+//    siteUrl = 'https://bitbucket.org/beappers/beapp.logger.andro'
+//    gitUrl = 'git@bitbucket.org:beappers/beapp.logger.andro.git'
+//
+//    developerId = 'dvilleneuve'
+//    developerName = 'Damien Villeneuve'
+//    developerEmail = 'd.villeneuve@beapp.fr'
+//
+//    licenseName = 'The Apache Software License, Version 2.0'
+//    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+//    allLicenses = ["Apache-2.0"]
+// }
+//
+//
+// Inspired from :
+// - https://inthecheesefactory.com/blog/how-to-upload-library-to-jcenter-maven-central-as-dependency/en
+// - https://github.com/JakeWharton/timber/blob/master/gradle/gradle-mvn-push.gradle
+
+
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+afterEvaluate { project ->
+    uploadArchives {
+        if (findProperty('beapp_artifactory_user') != null && findProperty('beapp_artifactory_password') != null) {
+            repositories {
+                mavenDeployer {
+                    beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+                    pom.groupId = libraryGroupId
+                    pom.artifactId = libraryArtifactId
+                    pom.version = libraryVersion
+
+                    if (findProperty('beapp_repository_release') != null) {
+                        repository(url: "${beapp_repository_release}") {
+                            authentication(userName: "${beapp_artifactory_user}", password: "${beapp_artifactory_password}")
+                        }
+                    }
+                    if (findProperty('beapp_repository_snapshot') != null) {
+                        snapshotRepository(url: "${beapp_repository_snapshot}") {
+                            authentication(userName: "${beapp_artifactory_user}", password: "${beapp_artifactory_password}")
+                        }
+                    }
+
+                    pom.project {
+                        name libraryName
+                        packaging libraryPackaging
+                        description libraryDescription
+                        url siteUrl
+
+                        scm {
+                            url siteUrl
+                            connection "scm:git:${gitUrl}"
+                            developerConnection "scm:git:${gitUrl}"
+                        }
+                        developers {
+                            developer {
+                                id developerId
+                                name developerName
+                                email developerEmail
+                            }
+                        }
+                        licenses {
+                            license {
+                                name licenseName
+                                url licenseUrl
+                                distribution = allLicenses
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    signing {
+        required {
+            !libraryVersion.contains("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives")
+        }
+        sign configurations.archives
+    }
+
+
+    if (project.hasProperty("android")) { // Android libraries
+//        task sourcesJar(type: Jar) {
+//            classifier = 'sources'
+//            from android.sourceSets.main.java.srcDirs
+//        }
+
+        task javadocs(type: Javadoc) {
+            source = android.sourceSets.main.java.srcDirs
+            classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+        }
+    } else { // Java libraries
+        task sourcesJar(type: Jar, dependsOn: classes) {
+            classifier = 'sources'
+            from sourceSets.main.allSource
+        }
+
+        task javadocs(type: Javadoc) {
+            source = sourceSets.main.java.srcDirs
+            classpath = project.sourceSets.main.compileClasspath
+        }
+    }
+
+    task javadocsJar(type: Jar, dependsOn: javadocs) {
+        classifier = 'javadoc'
+        from javadocs.destinationDir
+
+        if (JavaVersion.current().isJava8Compatible()) {
+            allprojects {
+                tasks.withType(Javadoc) {
+                    options.addStringOption('Xdoclint:none', '-quiet')
+                }
+            }
+        }
+    }
+
+    artifacts {
+        archives sourcesJar
+        archives javadocsJar
+    }
+}

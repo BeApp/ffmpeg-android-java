@@ -1,6 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
-apply plugin: "com.jfrog.bintray"
 
 // This is the library version used when deploying the artifact
 version = VERSION_NAME
@@ -38,43 +36,6 @@ dependencies {
 
 group = GROUP
 
-install {
-    repositories.mavenInstaller {
-        // This generates POM.xml with proper parameters
-        pom {
-            project {
-                packaging POM_PACKAGING
-
-                // Add your description here
-                name 'FFmpeg Android'
-                description = POM_DESCRIPTION
-                url POM_URL
-
-                // Set your license
-                licenses {
-                    license {
-                        name POM_LICENCE_NAME
-                        url POM_LICENCE_URL
-                    }
-                }
-                developers {
-                    developer {
-                        id POM_DEVELOPER_ID
-                        name POM_DEVELOPER_NAME
-                        email 'hitesh@writingminds.com'
-                    }
-                }
-                scm {
-                    connection POM_SCM_URL
-                    developerConnection POM_SCM_URL
-                    url POM_URL
-
-                }
-            }
-        }
-    }
-}
-
 task sourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
     classifier = 'sources'
@@ -97,31 +58,24 @@ artifacts {
 Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
-// https://github.com/bintray/gradle-bintray-plugin
-bintray {
-    user = properties.getProperty("bintray.user")
-    key = properties.getProperty("bintray.apikey")
+ext {
+    libraryName = 'Beapp Utils'
+    libraryGroupId = 'com.writingminds'
+    libraryArtifactId = 'FFmpegAndroid-Beapp'
+    libraryVersion = '0.3.2'
+    libraryPackaging = 'aar'
 
-    configurations = ['archives']
-    pkg {
-        repo = "maven"
-        // it is the name that appears in bintray when logged
-        name = "ffmpeg-android"
-        websiteUrl = POM_URL
-        vcsUrl = POM_SCM_URL
-        licenses = ["GPL-3.0"]
-        publish = true
-        version {
-            gpg {
-                sign = true
-                passphrase = properties.getProperty("bintray.gpg.password")
-            }
-            mavenCentralSync {
-                sync = true
-                user = properties.getProperty("bintray.oss.user") //OSS user token
-                password = properties.getProperty("bintray.oss.password") //OSS user password
-                close = '1'
-            }
-        }
-    }
+    libraryDescription = 'Android java library for FFmpeg binary compiled. Fork of https://github.com/WritingMinds/ffmpeg-android-java'
+
+    siteUrl = 'https://github.com/BeApp/ffmpeg-android-java'
+    gitUrl = 'git@github.com:BeApp/ffmpeg-android-java.git'
+
+    developerId = 'manoune'
+    developerName = 'Manon Hardy'
+    developerEmail = 'm.hardy@beapp.fr'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
 }
+apply from: project.rootProject.file('deploy.gradle')

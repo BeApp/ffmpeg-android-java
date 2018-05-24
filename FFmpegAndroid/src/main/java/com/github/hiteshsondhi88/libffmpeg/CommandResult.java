@@ -13,9 +13,9 @@ class CommandResult {
         return new CommandResult(false, "");
     }
 
-    static CommandResult getOutputFromProcess(Process process) {
+    static CommandResult getOutputFromProcess(Process process) throws InterruptedException {
         String output;
-        if (success(process.exitValue())) {
+        if (success(process.waitFor())) {
             output = Util.convertInputStreamToString(process.getInputStream());
         } else {
             output = Util.convertInputStreamToString(process.getErrorStream());

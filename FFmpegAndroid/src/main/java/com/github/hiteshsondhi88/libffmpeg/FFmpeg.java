@@ -121,4 +121,9 @@ public class FFmpeg implements FFmpegInterface {
             this.timeout = timeout;
         }
     }
+
+    public void cancel() {
+        ffmpegExecuteAsyncTask.cancel(true);
+        ffmpegExecuteAsyncTask = null;
+    }
 }

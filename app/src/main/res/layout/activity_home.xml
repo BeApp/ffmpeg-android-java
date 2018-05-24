@@ -24,6 +24,13 @@
         android:text="@string/run"
         android:padding="@dimen/button_padding"/>
 
+    <Button
+        android:id="@+id/stop_command"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Stop"
+        android:padding="@dimen/button_padding"/>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

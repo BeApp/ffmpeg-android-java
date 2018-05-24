@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -14,17 +13,20 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import javax.inject.Inject;
-
-import butterknife.ButterKnife;
-import butterknife.InjectView;
-import dagger.ObjectGraph;
-
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
+
+import java.util.Arrays;
+import java.util.List;
+
+import javax.inject.Inject;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import dagger.ObjectGraph;
 
 public class Home extends Activity implements View.OnClickListener {
 
@@ -42,6 +44,9 @@ public class Home extends Activity implements View.OnClickListener {
     @InjectView(R.id.run_command)
     Button runButton;
 
+    @InjectView(R.id.stop_command)
+    Button stopButton;
+
     private ProgressDialog progressDialog;
 
     @Override
@@ -57,6 +62,7 @@ public class Home extends Activity implements View.OnClickListener {
 
     private void initUI() {
         runButton.setOnClickListener(this);
+        stopButton.setOnClickListener(this);
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setTitle(null);
@@ -76,42 +82,58 @@ public class Home extends Activity implements View.OnClickListener {
     }
 
     private void execFFmpegBinary(final String[] command) {
+        final List<String> stringList = Arrays.asList(command);
         try {
             ffmpeg.execute(command, new ExecuteBinaryResponseHandler() {
                 @Override
                 public void onFailure(String s) {
-                    addTextViewToLayout("FAILED with output : "+s);
+                    addTextViewToLayout("FAILED with output : " + stringList.toString());
                 }
 
                 @Override
                 public void onSuccess(String s) {
-                    addTextViewToLayout("SUCCESS with output : "+s);
+                    addTextViewToLayout("SUCCESS with output : " + s);
                 }
 
                 @Override
                 public void onProgress(String s) {
-                    Log.d(TAG, "Started command : ffmpeg "+command);
-                    addTextViewToLayout("progress : "+s);
-                    progressDialog.setMessage("Processing\n"+s);
+                    Log.d(TAG, "On progress command : ffmpeg " + stringList.toString());
+                    addTextViewToLayout("progress : " + s);
+                    progressDialog.setMessage("Processing\n" + s);
                 }
 
                 @Override
                 public void onStart() {
                     outputLayout.removeAllViews();
 
-                    Log.d(TAG, "Started command : ffmpeg " + command);
+                    Log.d(TAG, "Started command : ffmpeg " + stringList.toString());
                     progressDialog.setMessage("Processing...");
                     progressDialog.show();
                 }
 
                 @Override
                 public void onFinish() {
-                    Log.d(TAG, "Finished command : ffmpeg "+command);
+                    Log.d(TAG, "Finished command : ffmpeg " + stringList.toString());
                     progressDialog.dismiss();
                 }
             });
         } catch (FFmpegCommandAlreadyRunningException e) {
             // do nothing for now
+            Log.w(TAG, "FFmpegCommandAlreadyRunningException");
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        stop();
+
+        super.onPause();
+    }
+
+    private void stop() {
+        if (ffmpeg.isFFmpegCommandRunning()) {
+            Log.i(TAG, "Kill running process");
+            ffmpeg.cancel();
         }
     }
 
@@ -135,7 +157,6 @@ public class Home extends Activity implements View.OnClickListener {
                 })
                 .create()
                 .show();
-
     }
 
     @Override
@@ -149,6 +170,9 @@ public class Home extends Activity implements View.OnClickListener {
                 } else {
                     Toast.makeText(Home.this, getString(R.string.empty_command_toast), Toast.LENGTH_LONG).show();
                 }
+                break;
+            case R.id.stop_command:
+                stop();
                 break;
         }
     }

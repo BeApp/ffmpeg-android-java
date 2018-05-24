@@ -73,7 +73,7 @@ class FFmpegExecuteAsyncTask extends AsyncTask<Void, String, CommandResult> {
         }
     }
 
-    private void checkAndUpdateProcess() throws TimeoutException, InterruptedException {
+    private void checkAndUpdateProcess() throws TimeoutException {
         while (!Util.isProcessCompleted(process)) {
             // checking if process is completed
             if (Util.isProcessCompleted(process)) {
@@ -85,19 +85,25 @@ class FFmpegExecuteAsyncTask extends AsyncTask<Void, String, CommandResult> {
                 throw new TimeoutException("FFmpeg timed out");
             }
 
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
             try {
                 String line;
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                 while ((line = reader.readLine()) != null) {
                     if (isCancelled()) {
                         return;
                     }
 
-                    output += line+"\n";
+                    output += line + "\n";
                     publishProgress(line);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -105,5 +111,4 @@ class FFmpegExecuteAsyncTask extends AsyncTask<Void, String, CommandResult> {
     boolean isProcessCompleted() {
         return Util.isProcessCompleted(process);
     }
-
 }

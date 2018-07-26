@@ -31,11 +31,15 @@ android {
 }
 
 dependencies {
+    implementation 'com.squareup.dagger:dagger:1.2.2'
     annotationProcessor 'com.squareup.dagger:dagger-compiler:1.2.2'
-    compile 'com.squareup.dagger:dagger:1.2.2'
-    compile 'com.jakewharton:butterknife:5.1.2'
-    annotationProcessor 'com.jakewharton:butterknife:5.1.2'
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile 'com.squareup.assertj:assertj-android:1.0.0'
-    compile project(':FFmpegAndroid')
+
+    // View binding
+    // Need to use 9.0.0-SNAPSHOT to work with gradle 3 and library module (see : https://github.com/JakeWharton/butterknife/issues/963#issuecomment-323260822)
+    api 'com.jakewharton:butterknife:9.0.0-SNAPSHOT'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:9.0.0-SNAPSHOT'
+
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation 'com.squareup.assertj:assertj-android:1.0.0'
+    implementation project(':FFmpegAndroid')
 }

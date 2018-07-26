@@ -9,7 +9,7 @@ import dagger.Provides;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 
 @Module(
-        injects = Home.class
+        injects = HomeActivity.class
 )
 @SuppressWarnings("unused")
 public class DaggerDependencyModule {

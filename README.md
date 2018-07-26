@@ -23,14 +23,12 @@ For examples and usage instructions head over to:
 ![http://i.imgur.com/cP4WhLn.gif](http://i.imgur.com/cP4WhLn.gif)
 * [Download APK](https://github.com/writingminds/ffmpeg-android-java/releases/download/v0.3.2/app-debug.apk)
 
+## Update FFMPEG lib
+* Updated from [https://github.com/bravobit/FFmpeg-Android](https://github.com/bravobit/FFmpeg-Android)
+* Current version is 4.0.9
+
 ## JavaDoc
 * [Javadoc](http://writingminds.github.io/ffmpeg-android-java/docs/)
 
 ## License
 * Check file LICENSE.GPLv3 and Make sure to follow the licensing terms and conditions of the project and the software used to build the project.
-
-## HIRE US
-* Get in touch with us - http://www.writingminds.com
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/hiteshsondhi88/ffmpeg-android-java/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
